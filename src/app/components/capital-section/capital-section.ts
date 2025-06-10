@@ -10,7 +10,7 @@ import { faForward } from '@fortawesome/free-solid-svg-icons';
   selector: 'app-capital-section',
   standalone: true,
   imports: [CommonModule, FontAwesomeModule], // Add FontAwesomeModule
-  templateUrl: './capital-section.component.html',
+  templateUrl: './capital-section.html',
   styleUrls: ['./capital-section.component.css']
 })
 export class CapitalSectionComponent implements OnInit, OnDestroy {

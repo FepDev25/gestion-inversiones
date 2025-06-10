@@ -11,7 +11,7 @@ import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
   selector: 'app-investment-list',
   standalone: true,
   imports: [CommonModule, InvestmentCardComponent, FontAwesomeModule], // Add FontAwesomeModule
-  templateUrl: './investment-list.component.html',
+  templateUrl: './investment-list.html',
   styleUrls: ['./investment-list.component.css']
 })
 export class InvestmentListComponent implements OnInit, OnDestroy {
