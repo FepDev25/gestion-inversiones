@@ -28,7 +28,36 @@
 
     <p *ngIf="investment.description" class="text-sm text-gray-600 mb-3">{{ investment.description }}</p>
 
-    <div class="flex justify-between">
+    <!-- Specific details based on investment type -->
+    <div *ngIf="isStock(investment)" class="mt-2 border-t pt-2">
+      <p class="text-xs text-gray-500">Ticker: <span class="font-medium text-gray-700">{{ investment.tickerSymbol }}</span></p>
+      <p class="text-xs text-gray-500">Shares: <span class="font-medium text-gray-700">{{ investment.shares }}</span></p>
+      <p class="text-xs text-gray-500">Acquisition %: <span class="font-medium text-gray-700">{{ investment.acquisitionPercentage * 100 | number:'1.0-2' }}%</span></p>
+    </div>
+
+    <div *ngIf="isCrypto(investment)" class="mt-2 border-t pt-2">
+      <p class="text-xs text-gray-500">Crypto: <span class="font-medium text-gray-700">{{ investment.cryptoName }}</span></p>
+      <p *ngIf="investment.walletAddress" class="text-xs text-gray-500">Wallet: <span class="font-medium text-gray-700">{{ investment.walletAddress }}</span></p>
+    </div>
+
+    <div *ngIf="isRealEstate(investment)" class="mt-2 border-t pt-2">
+      <p class="text-xs text-gray-500">Address: <span class="font-medium text-gray-700">{{ investment.propertyAddress }}</span></p>
+      <p class="text-xs text-gray-500">Property Type: <span class="font-medium text-gray-700">{{ investment.propertyType }}</span></p>
+    </div>
+
+    <div *ngIf="isBond(investment)" class="mt-2 border-t pt-2">
+      <p class="text-xs text-gray-500">Issuer: <span class="font-medium text-gray-700">{{ investment.issuerName }}</span></p>
+      <p class="text-xs text-gray-500">Maturity: <span class="font-medium text-gray-700">{{ investment.maturityDate | date:'mediumDate' }}</span></p>
+      <p class="text-xs text-gray-500">Coupon Rate: <span class="font-medium text-gray-700">{{ investment.couponRate * 100 | number:'1.0-2' }}%</span></p>
+    </div>
+
+    <div *ngIf="isBusiness(investment)" class="mt-2 border-t pt-2">
+      <p class="text-xs text-gray-500">Business: <span class="font-medium text-gray-700">{{ investment.businessName }}</span></p>
+      <p class="text-xs text-gray-500">Stake: <span class="font-medium text-gray-700">{{ investment.stakePercentage * 100 | number:'1.0-2' }}%</span></p>
+    </div>
+    <!-- End of specific details -->
+
+    <div class="flex justify-between mt-3"> {/* Added mt-3 for spacing if specific details are shown */}
       <button (click)="onEdit()" class="px-3 py-1 bg-amber-100 text-amber-800 text-sm rounded hover:bg-amber-200">
         <fa-icon [icon]="['fas', 'edit']" class="mr-1"></fa-icon> Actualizar
       </button>

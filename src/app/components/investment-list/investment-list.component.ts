@@ -2,20 +2,25 @@ import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { InvestmentService } from '../../services/investment.service';
-import { Investment } from '../../models/investment.model';
+import { Investment, InvestmentType, getAllInvestmentTypes } from '../../models/investment.model'; // Added InvestmentType, getAllInvestmentTypes
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 import { InvestmentCardComponent } from './investment-card/investment-card.component';
+import { FormsModule } from '@angular/forms'; // Import FormsModule
 
 @Component({
   selector: 'app-investment-list',
   standalone: true,
-  imports: [CommonModule, InvestmentCardComponent, FontAwesomeModule], // Add FontAwesomeModule
+  imports: [CommonModule, InvestmentCardComponent, FontAwesomeModule, FormsModule], // Add FormsModule
   templateUrl: './investment-list.html',
   styleUrls: ['./investment-list.css']
 })
 export class InvestmentListComponent implements OnInit, OnDestroy {
-  investments: Investment[] = [];
+  investments: Investment[] = []; // This will hold the filtered list
+  allInvestments: Investment[] = []; // To store the original full list
+  investmentTypes: InvestmentType[] = getAllInvestmentTypes();
+  selectedType: InvestmentType | 'all' = 'all';
+
   private stateSubscription!: Subscription;
 
   @Output() addInvestmentClick = new EventEmitter<void>();
@@ -27,8 +32,23 @@ export class InvestmentListComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.stateSubscription = this.investmentService.getState().subscribe(state => {
-      this.investments = state.investments;
+      this.allInvestments = state.investments;
+      this.filterInvestments(); // Apply initial filter
     });
+  }
+
+  filterInvestments(): void {
+    if (this.selectedType === 'all') {
+      this.investments = [...this.allInvestments];
+    } else {
+      this.investments = this.allInvestments.filter(inv => inv.type === this.selectedType);
+    }
+  }
+
+  onTypeChange(event: Event): void {
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedType = selectElement.value as InvestmentType | 'all';
+    this.filterInvestments();
   }
 
   ngOnDestroy(): void {
