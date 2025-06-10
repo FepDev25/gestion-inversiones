@@ -5,14 +5,14 @@ import { InvestmentService } from '../../services/investment.service';
 import { Investment } from '../../models/investment.model';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-import { InvestmentCardComponent } from './investment-card/investment-card';
+import { InvestmentCardComponent } from './investment-card/investment-card.component';
 
 @Component({
   selector: 'app-investment-list',
   standalone: true,
   imports: [CommonModule, InvestmentCardComponent, FontAwesomeModule], // Add FontAwesomeModule
   templateUrl: './investment-list.html',
-  styleUrls: ['./investment-list.component.css']
+  styleUrls: ['./investment-list.css']
 })
 export class InvestmentListComponent implements OnInit, OnDestroy {
   investments: Investment[] = [];

@@ -9,7 +9,7 @@ import { faChartLine, faHome, faCoins, faFileInvoiceDollar, faBriefcase, faPiggy
   standalone: true,
   imports: [CommonModule, FontAwesomeModule], // Add FontAwesomeModule
   templateUrl: './investment-card.html',
-  styleUrls: ['./investment-card.component.css']
+  styleUrls: ['./investment-card.css']
 })
 export class InvestmentCardComponent {
   @Input() investment!: Investment;
