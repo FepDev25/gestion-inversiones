@@ -9,6 +9,23 @@
     </button>
   </div>
 
+  <!-- Filter Dropdown -->
+  <div class="mb-4">
+    <label for="investment-type-filter" class="block text-sm font-medium text-gray-700">Filtrar por tipo:</label>
+    <select
+      id="investment-type-filter"
+      name="investment-type-filter"
+      class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+      [ngModel]="selectedType"
+      (change)="onTypeChange($event)">
+      <option value="all">Todas</option>
+      <option *ngFor="let type of investmentTypes" [value]="type">
+        {{ type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' ') }}
+      </option>
+    </select>
+  </div>
+  <!-- End Filter Dropdown -->
+
   <div id="investments-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <ng-container *ngIf="investments.length > 0; else noInvestments">
       <app-investment-card

@@ -18,12 +18,9 @@
         <label for="investment-type" class="block text-gray-700 mb-2">Tipo</label>
         <select id="investment-type" name="investmentType" [(ngModel)]="investmentType"
                 class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="stocks">Acciones</option>
-          <option value="real-estate">Bienes Raíces</option>
-          <option value="crypto">Criptomonedas</option>
-          <option value="bonds">Bonos</option>
-          <option value="business">Negocio</option>
-          <option value="other">Otro</option>
+          <option *ngFor="let typeOpt of investmentTypes" [value]="typeOpt">
+            {{ typeOpt.charAt(0).toUpperCase() + typeOpt.slice(1).replace('-', ' ') }}
+          </option>
         </select>
       </div>
 
@@ -45,7 +42,91 @@
                   class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
       </div>
 
-      <div class="flex justify-end space-x-3">
+      <!-- Conditional fields based on investmentType -->
+      <div *ngIf="investmentType === 'stocks'" class="space-y-4 border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-semibold text-gray-700">Detalles de Acciones</h4>
+        <div>
+          <label for="ticker-symbol" class="block text-gray-700 mb-2">Símbolo (Ticker)</label>
+          <input type="text" id="ticker-symbol" name="tickerSymbol" [(ngModel)]="tickerSymbol" required
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="shares" class="block text-gray-700 mb-2">Cantidad de Acciones</label>
+          <input type="number" id="shares" name="shares" [(ngModel)]="shares" required min="1"
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="acquisition-percentage" class="block text-gray-700 mb-2">Porcentaje de Adquisición (Ej: 0.5 para 50%)</label>
+          <input type="number" id="acquisition-percentage" name="acquisitionPercentage" [(ngModel)]="acquisitionPercentage" required min="0" max="1" step="0.01"
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+
+      <div *ngIf="investmentType === 'crypto'" class="space-y-4 border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-semibold text-gray-700">Detalles de Criptomonedas</h4>
+        <div>
+          <label for="crypto-name" class="block text-gray-700 mb-2">Nombre de la Criptomoneda</label>
+          <input type="text" id="crypto-name" name="cryptoName" [(ngModel)]="cryptoName" required
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="wallet-address" class="block text-gray-700 mb-2">Dirección de Wallet (Opcional)</label>
+          <input type="text" id="wallet-address" name="walletAddress" [(ngModel)]="walletAddress"
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+
+      <div *ngIf="investmentType === 'real-estate'" class="space-y-4 border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-semibold text-gray-700">Detalles de Bienes Raíces</h4>
+        <div>
+          <label for="property-address" class="block text-gray-700 mb-2">Dirección de la Propiedad</label>
+          <input type="text" id="property-address" name="propertyAddress" [(ngModel)]="propertyAddress" required
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="property-type" class="block text-gray-700 mb-2">Tipo de Propiedad</label>
+          <select id="property-type" name="propertyType" [(ngModel)]="propertyType" required
+                  class="w-full p-2 border border-gray-300 rounded-md">
+            <option *ngFor="let pt of propertyTypes" [value]="pt">{{ pt.charAt(0).toUpperCase() + pt.slice(1) }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="investmentType === 'bonds'" class="space-y-4 border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-semibold text-gray-700">Detalles de Bonos</h4>
+        <div>
+          <label for="issuer-name" class="block text-gray-700 mb-2">Nombre del Emisor</label>
+          <input type="text" id="issuer-name" name="issuerName" [(ngModel)]="issuerName" required
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="maturity-date" class="block text-gray-700 mb-2">Fecha de Vencimiento</label>
+          <input type="date" id="maturity-date" name="maturityDate" [(ngModel)]="maturityDate" required
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="coupon-rate" class="block text-gray-700 mb-2">Tasa de Cupón (Ej: 0.05 para 5%)</label>
+          <input type="number" id="coupon-rate" name="couponRate" [(ngModel)]="couponRate" required min="0" max="1" step="0.001"
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+
+      <div *ngIf="investmentType === 'business'" class="space-y-4 border-t border-gray-200 pt-4 mt-4">
+        <h4 class="text-md font-semibold text-gray-700">Detalles de Negocio</h4>
+        <div>
+          <label for="business-name" class="block text-gray-700 mb-2">Nombre del Negocio</label>
+          <input type="text" id="business-name" name="businessName" [(ngModel)]="businessName" required
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label for="stake-percentage" class="block text-gray-700 mb-2">Porcentaje de Participación (Ej: 0.2 para 20%)</label>
+          <input type="number" id="stake-percentage" name="stakePercentage" [(ngModel)]="stakePercentage" required min="0" max="1" step="0.01"
+                 class="w-full p-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+      <!-- End conditional fields -->
+
+      <div class="flex justify-end space-x-3 mt-6"> {/* Added mt-6 for spacing if specific fields are shown */}
         <button type="button" (click)="onCancel()" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">
           Cancelar
         </button>

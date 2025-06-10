@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Investment } from '../../../models/investment.model';
+import { Investment, StockInvestment, CryptoInvestment, RealEstateInvestment, BondInvestment, BusinessInvestment, OtherInvestment } from '../../../models'; // Adjusted import path
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faChartLine, faHome, faCoins, faFileInvoiceDollar, faBriefcase, faPiggyBank, faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
@@ -12,7 +12,7 @@ import { faChartLine, faHome, faCoins, faFileInvoiceDollar, faBriefcase, faPiggy
   styleUrls: ['./investment-card.css']
 })
 export class InvestmentCardComponent {
-  @Input() investment!: Investment;
+  @Input() investment!: Investment; // Remains as union type
   @Output() editEarnings = new EventEmitter<Investment>();
   @Output() removeInvestment = new EventEmitter<string>();
 
@@ -79,5 +79,31 @@ export class InvestmentCardComponent {
     if (confirm("¿Estás seguro de que quieres eliminar esta inversión?")) {
       this.removeInvestment.emit(this.investment.id);
     }
+  }
+
+  // Type assertion helper methods
+  isStock(investment: Investment): investment is StockInvestment {
+    return investment.type === 'stocks';
+  }
+
+  isCrypto(investment: Investment): investment is CryptoInvestment {
+    return investment.type === 'crypto';
+  }
+
+  isRealEstate(investment: Investment): investment is RealEstateInvestment {
+    return investment.type === 'real-estate';
+  }
+
+  isBond(investment: Investment): investment is BondInvestment {
+    return investment.type === 'bonds';
+  }
+
+  isBusiness(investment: Investment): investment is BusinessInvestment {
+    return investment.type === 'business';
+  }
+
+  // isOther is not strictly necessary if it's the fallback, but can be added for completeness
+  isOther(investment: Investment): investment is OtherInvestment {
+    return investment.type === 'other';
   }
 }

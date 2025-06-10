@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AppState, MonthlyHistory } from '../models/app-state.model';
-import { Investment } from '../models/investment.model';
+import { Investment, StockInvestment, CryptoInvestment, RealEstateInvestment, BondInvestment, BusinessInvestment, OtherInvestment } from '../models/investment.model';
 
 const DEFAULT_STATE: AppState = {
   initialCapital: 0,
@@ -107,14 +107,14 @@ export class InvestmentService {
     this.updateCurrentMonthSummary(true); // Recalculate performance etc.
   }
 
-  addInvestment(investmentData: Omit<Investment, 'id' | 'addedAt'>): void {
+  addInvestment(investmentData: Omit<StockInvestment | CryptoInvestment | RealEstateInvestment | BondInvestment | BusinessInvestment | OtherInvestment, 'id' | 'addedAt'>): void {
     const currentState = this.getCurrentState();
     if (investmentData.amount > currentState.currentBalance) {
       alert('No tienes suficiente capital para esta inversión');
       return;
     }
 
-    const newInvestment: Investment = {
+    const newInvestment: Investment = { // Explicitly type newInvestment with the union type
       ...investmentData,
       id: Date.now().toString(),
       addedAt: currentState.currentMonth,
