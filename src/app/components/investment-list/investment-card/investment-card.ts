@@ -8,7 +8,7 @@ import { faChartLine, faHome, faCoins, faFileInvoiceDollar, faBriefcase, faPiggy
   selector: 'app-investment-card',
   standalone: true,
   imports: [CommonModule, FontAwesomeModule], // Add FontAwesomeModule
-  templateUrl: './investment-card.component.html',
+  templateUrl: './investment-card.html',
   styleUrls: ['./investment-card.component.css']
 })
 export class InvestmentCardComponent {
