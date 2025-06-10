@@ -1,0 +1,28 @@
+<section class="mb-12">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-semibold text-gray-800">Mis Inversiones</h2>
+    <button
+      id="add-investment-btn"
+      (click)="onAddInvestment()"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center">
+      <fa-icon [icon]="['fas', 'plus-circle']" class="mr-2"></fa-icon> Agregar Inversión
+    </button>
+  </div>
+
+  <div id="investments-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <ng-container *ngIf="investments.length > 0; else noInvestments">
+      <app-investment-card
+        *ngFor="let investment of investments"
+        [investment]="investment"
+        (editEarnings)="handleEditEarningsRequest($event)"
+        (removeInvestment)="handleRemoveInvestmentRequest($event)">
+      </app-investment-card>
+    </ng-container>
+    <ng-template #noInvestments>
+      <div class="bg-gray-100 p-6 rounded-lg text-center md:col-span-2 lg:col-span-3">
+        <i class="fas fa-coins text-4xl text-gray-400 mb-4"></i>
+        <p class="text-gray-600">No hay inversiones registradas</p>
+      </div>
+    </ng-template>
+  </div>
+</section>
