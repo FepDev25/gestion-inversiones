@@ -80,7 +80,7 @@ export class InvestmentService {
 
     if (currentState.investments.length === 0 && currentState.currentMonth === 1) {
       newBalance = capital;
-      const month1Index = historyClone.findIndex(h => h.month === 1);
+      const month1Index = historyClone.findIndex((h: { month: number; }) => h.month === 1);
       if (month1Index !== -1) {
         historyClone[month1Index].balance = capital;
       }
@@ -93,7 +93,7 @@ export class InvestmentService {
       newBalance += diff;
       // Adjust all history balances by this difference as well, as their starting point changed.
       // This is a significant operation and implies a full recalculation might be better in a real app.
-      historyClone.forEach(h => h.balance += diff);
+      historyClone.forEach((h: { balance: number; }) => h.balance += diff);
     }
 
     const newState: AppState = {
@@ -173,7 +173,7 @@ export class InvestmentService {
 
     // Update history for the month that just ENDED
     const historyClone = JSON.parse(JSON.stringify(currentState.history));
-    const currentMonthHistoryIndex = historyClone.findIndex(h => h.month === currentState.currentMonth);
+    const currentMonthHistoryIndex = historyClone.findIndex((h: { month: number; }) => h.month === currentState.currentMonth);
 
     if (currentMonthHistoryIndex !== -1) {
       historyClone[currentMonthHistoryIndex].monthlyEarnings = earningsThisMonth;
@@ -186,7 +186,7 @@ export class InvestmentService {
         balance: newBalanceAfterEarnings,
         monthlyEarnings: earningsThisMonth,
       });
-      historyClone.sort((a,b) => a.month - b.month);
+      historyClone.sort((a: { month: number; },b: { month: number; }) => a.month - b.month);
     }
 
     // Prepare for the NEW month
@@ -198,7 +198,7 @@ export class InvestmentService {
       monthlyEarnings: 0, // Earnings for the new month will be calculated as it progresses or by next advanceMonth
     };
     historyClone.push(newHistoryEntryForNewMonth);
-    historyClone.sort((a,b) => a.month - b.month);
+    historyClone.sort((a: { month: number; },b: { month: number; }) => a.month - b.month);
 
 
     const newState: AppState = {
@@ -231,7 +231,7 @@ export class InvestmentService {
     // Also update the current month's entry in history if it exists (it should)
     // This is for the "live" view of the current month's projected earnings/performance
     const historyClone = JSON.parse(JSON.stringify(updatedState.history));
-    const currentMonthHistoryIdx = historyClone.findIndex(h => h.month === updatedState.currentMonth);
+    const currentMonthHistoryIdx = historyClone.findIndex((h: { month: number; }) => h.month === updatedState.currentMonth);
     if (currentMonthHistoryIdx !== -1) {
         // The balance in history for the *current, ongoing* month should reflect the *current* balance.
         // Earnings are what's projected for this month.

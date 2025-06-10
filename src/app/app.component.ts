@@ -4,12 +4,12 @@ import { InvestmentService } from './services/investment.service'; // Service
 import { Investment } from './models/investment.model'; // Model
 
 // Import all child components
-import { HeaderComponent } from './components/header/header';
 import { CapitalSectionComponent } from './components/capital-section/capital-section';
 import { InvestmentListComponent } from './components/investment-list/investment-list';
 import { ChartsSectionComponent } from './components/charts-section/charts-section.component';
 import { AddInvestmentModalComponent } from './components/modals/add-investment-modal/add-investment-modal.component';
 import { EditEarningsModalComponent } from './components/modals/edit-earnings-modal/edit-earnings-modal.component';
+import { HeaderComponent } from './components/header/header.component';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +27,7 @@ import { EditEarningsModalComponent } from './components/modals/edit-earnings-mo
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  title = 'gestion-inversiones';
   isAddInvestmentModalVisible = false;
   isEditEarningsModalVisible = false;
   selectedInvestmentForEdit: Investment | null = null;

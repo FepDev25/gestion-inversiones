@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { InvestmentService } from '../../services/investment.service';
 import { Investment } from '../../models/investment.model';
-import { InvestmentCardComponent } from './investment-card/investment-card.component'; // Corrected path
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { InvestmentCardComponent } from './investment-card/investment-card';
 
 @Component({
   selector: 'app-investment-list',
