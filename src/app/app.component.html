@@ -1,6 +1,41 @@
-<h1 class="text-4xl font-bold text-center text-blue-500">
-  ¡Tailwind funciona en Angular!
-</h1>
+<body class="bg-gray-50 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <app-header></app-header>
 
+    <!-- Initial Capital Section -->
+    <app-capital-section></app-capital-section>
 
-<router-outlet />
+    <!-- Investment Section -->
+    <!-- Listen for addInvestmentClick and editInvestmentClick events from InvestmentListComponent -->
+    <app-investment-list
+      (addInvestmentClick)="openAddInvestmentModal()"
+      (editInvestmentClick)="openEditEarningsModal($event)">
+    </app-investment-list>
+
+    <!-- Charts Section -->
+    <app-charts-section></app-charts-section>
+
+    <!-- Add Investment Modal -->
+    <app-add-investment-modal
+      [isVisible]="isAddInvestmentModalVisible"
+      (closeModal)="closeAddInvestmentModal()">
+    </app-add-investment-modal>
+
+    <!-- Edit Earnings Modal -->
+    <app-edit-earnings-modal
+      [isVisible]="isEditEarningsModalVisible"
+      [investmentToEdit]="selectedInvestmentForEdit"
+      (closeModal)="closeEditEarningsModal()">
+    </app-edit-earnings-modal>
+
+  </div>
+
+  <!-- Footer/DeepSite Link (Optional, based on original HTML) -->
+  <!-- Consider making this a separate component if it's complex or configurable -->
+  <p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">
+    Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);">
+    <a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank">DeepSite</a> - 🧬
+    <a href="https://enzostvs-deepsite.hf.space?remix=fepdev25/gestion-inversiones" style="color: #fff;text-decoration: underline;" target="_blank">Remix</a>
+  </p>
+</body>
