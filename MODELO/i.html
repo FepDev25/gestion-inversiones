@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor de Inversiones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .investment-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-bold text-blue-800 mb-2">Gestor de Inversiones</h1>
+            <p class="text-gray-600">Administra y haz crecer tu capital</p>
+        </header>
+
+        <!-- Initial Capital Section -->
+        <section class="mb-12 bg-white rounded-lg shadow-md p-6 fade-in">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-800">Capital Inicial</h2>
+                <div class="flex items-center">
+                    <span id="current-month" class="text-gray-600 mr-4">Mes actual: 1</span>
+                    <button id="next-month-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md flex items-center">
+                        <i class="fas fa-forward mr-2"></i> Avanzar Mes
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <div class="mb-4">
+                        <label for="initial-capital" class="block text-gray-700 mb-2">Capital Inicial ($)</label>
+                        <input type="number" id="initial-capital" placeholder="10000" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-gray-600 mb-2">Saldo total acumulado:</p>
+                        <p id="total-balance" class="text-3xl font-bold text-blue-700">$0</p>
+                    </div>
+                </div>
+                
+                <div class="flex-1 bg-gray-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-medium text-gray-700 mb-3">Resumen Mensual</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-600">Ganancias este mes:</p>
+                            <p id="monthly-earnings" class="text-xl font-semibold text-green-600">$0</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total inversiones:</p>
+                            <p id="total-invested" class="text-xl font-semibold text-blue-600">$0</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 bg-white p-3 rounded-md">
+                        <p class="text-gray-600 mb-1">Rendimiento mensual:</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="monthly-performance-bar" class="progress-bar bg-green-500 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p id="monthly-performance" class="text-sm text-right mt-1 text-gray-600">0%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Investment Section -->
+        <section class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Mis Inversiones</h2>
+                <button id="add-investment-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center">
+                    <i class="fas fa-plus-circle mr-2"></i> Agregar Inversión
+                </button>
+            </div>
+            
+            <!-- Investment Cards Container -->
+            <div id="investments-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Investment cards will be added here dynamically -->
+                <div class="bg-gray-100 p-6 rounded-lg text-center">
+                    <i class="fas fa-coins text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600">No hay inversiones registradas</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="mb-12 bg-white rounded-lg shadow-md p-6 fade-in">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">Visualización de Rendimientos</h2>
+            <div class="flex flex-col lg:flex-row gap-8">
+                <div class="flex-1">
+                    <h3 class="text-lg font-medium text-gray-700 mb-4">Evolución del Capital</h3>
+                    <canvas id="balance-chart" height="250"></canvas>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-lg font-medium text-gray-700 mb-4">Distribución de Inversiones</h3>
+                    <canvas id="investment-distribution" height="250"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add Investment Modal -->
+        <div id="add-investment-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Nueva Inversión</h3>
+                    <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="investment-form" class="space-y-4">
+                    <div>
+                        <label for="investment-name" class="block text-gray-700 mb-2">Nombre</label>
+                        <input type="text" id="investment-name" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="investment-type" class="block text-gray-700 mb-2">Tipo</label>
+                        <select id="investment-type" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="stocks">Acciones</option>
+                            <option value="real-estate">Bienes Raíces</option>
+                            <option value="crypto">Criptomonedas</option>
+                            <option value="bonds">Bonos</option>
+                            <option value="business">Negocio</option>
+                            <option value="other">Otro</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="investment-amount" class="block text-gray-700 mb-2">Capital Invertido ($)</label>
+                        <input type="number" id="investment-amount" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="monthly-earning" class="block text-gray-700 mb-2">Ganancia Mensual ($)</label>
+                        <input type="number" id="monthly-earning" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label for="investment-description" class="block text-gray-700 mb-2">Descripción (opcional)</label>
+                        <textarea id="investment-description" rows="3" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-investment-btn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Earnings Modal -->
+        <div id="edit-earnings-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800">Actualizar Ganancias</h3>
+                    <button id="close-edit-modal-btn" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="edit-earnings-form" class="space-y-4">
+                    <input type="hidden" id="edit-investment-id">
+                    
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <p class="text-gray-600 mb-1">Inversión actual:</p>
+                        <p id="edit-investment-name" class="font-medium"></p>
+                        <p class="text-gray-600 mt-2 mb-1">Ganancia actual:</p>
+                        <p id="current-earning" class="font-medium"></p>
+                    </div>
+                    
+                    <div>
+                        <label for="new-monthly-earning" class="block text-gray-700 mb-2">Nueva Ganancia Mensual ($)</label>
+                        <input type="number" id="new-monthly-earning" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" id="cancel-edit-btn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Actualizar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        const state = {
+            initialCapital: 0,
+            currentBalance: 0,
+            investments: [],
+            currentMonth: 1,
+            monthlyEarnings: 0,
+            monthlyPerformance: 0,
+            history: []
+        };
+
+        // DOM Elements
+        const elements = {
+            initialCapitalInput: document.getElementById('initial-capital'),
+            totalBalanceDisplay: document.getElementById('total-balance'),
+            investmentsContainer: document.getElementById('investments-container'),
+            addInvestmentBtn: document.getElementById('add-investment-btn'),
+            addInvestmentModal: document.getElementById('add-investment-modal'),
+            closeModalBtn: document.getElementById('close-modal-btn'),
+            closeEditModalBtn: document.getElementById('close-edit-modal-btn'),
+            cancelInvestmentBtn: document.getElementById('cancel-investment-btn'),
+            investmentForm: document.getElementById('investment-form'),
+            editEarningsModal: document.getElementById('edit-earnings-modal'),
+            editEarningsForm: document.getElementById('edit-earnings-form'),
+            nextMonthBtn: document.getElementById('next-month-btn'),
+            currentMonthDisplay: document.getElementById('current-month'),
+            monthlyEarningsDisplay: document.getElementById('monthly-earnings'),
+            totalInvestedDisplay: document.getElementById('total-invested'),
+            monthlyPerformanceDisplay: document.getElementById('monthly-performance'),
+            monthlyPerformanceBar: document.getElementById('monthly-performance-bar'),
+            balanceChart: document.getElementById('balance-chart'),
+            investmentDistributionChart: document.getElementById('investment-distribution'),
+            cancelEditBtn: document.getElementById('cancel-edit-btn')
+        };
+
+        // Chart Instances
+        let balanceChart;
+        let distributionChart;
+
+        // Initialize App
+        function init() {
+            // Load from localStorage if available
+            const savedState = localStorage.getItem('investmentApp');
+            if (savedState) {
+                Object.assign(state, JSON.parse(savedState));
+                render();
+            }
+
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Initialize charts
+            initCharts();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Initial capital input
+            elements.initialCapitalInput.addEventListener('change', (e) => {
+                state.initialCapital = parseFloat(e.target.value) || 0;
+                state.currentBalance = state.initialCapital;
+                updateTotalBalance();
+                updateCharts();
+                saveState();
+            });
+
+            // Add investment modal
+            elements.addInvestmentBtn.addEventListener('click', () => {
+                elements.addInvestmentModal.classList.remove('hidden');
+            });
+
+            elements.closeModalBtn.addEventListener('click', closeModals);
+            elements.cancelInvestmentBtn.addEventListener('click', closeModals);
+            elements.closeEditModalBtn.addEventListener('click', closeModals);
+            elements.cancelEditBtn.addEventListener('click', closeModals);
+
+            // Investment form submission
+            elements.investmentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                addInvestment();
+            });
+
+            // Edit earnings form submission
+            elements.editEarningsForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                updateInvestmentEarnings();
+            });
+
+            // Next month button
+            elements.nextMonthBtn.addEventListener('click', advanceMonth);
+        }
+
+        // Add new investment
+        function addInvestment() {
+            const name = document.getElementById('investment-name').value;
+            const type = document.getElementById('investment-type').value;
+            const amount = parseFloat(document.getElementById('investment-amount').value) || 0;
+            const monthlyEarning = parseFloat(document.getElementById('monthly-earning').value) || 0;
+            const description = document.getElementById('investment-description').value;
+
+            if (amount > state.currentBalance) {
+                alert("No tienes suficiente capital para esta inversión");
+                return;
+            }
+
+            const newInvestment = {
+                id: Date.now().toString(),
+                name,
+                type,
+                amount,
+                monthlyEarning,
+                description,
+                addedAt: state.currentMonth
+            };
+
+            state.investments.push(newInvestment);
+            state.currentBalance -= amount;
+            
+            updateTotalBalance();
+            updateTotalInvested();
+            updateCharts();
+            saveState();
+            
+            elements.investmentForm.reset();
+            elements.addInvestmentModal.classList.add('hidden');
+            
+            renderInvestments();
+        }
+
+        // Update investment earnings
+        function updateInvestmentEarnings() {
+            const investmentId = document.getElementById('edit-investment-id').value;
+            const newEarning = parseFloat(document.getElementById('new-monthly-earning').value) || 0;
+
+            const investment = state.investments.find(inv => inv.id === investmentId);
+            if (investment) {
+                investment.monthlyEarning = newEarning;
+                saveState();
+                renderInvestments();
+            }
+
+            elements.editEarningsModal.classList.add('hidden');
+        }
+
+        // Advance to next month
+        function advanceMonth() {
+            if (state.investments.length === 0) {
+                alert("No hay inversiones para generar ganancias");
+                return;
+            }
+
+            state.currentMonth++;
+            elements.currentMonthDisplay.textContent = `Mes actual: ${state.currentMonth}`;
+            
+            // Calculate monthly earnings from all investments
+            state.monthlyEarnings = state.investments.reduce((sum, inv) => sum + inv.monthlyEarning, 0);
+            
+            // Add earnings to current balance
+            state.currentBalance += state.monthlyEarnings;
+            
+            // Calculate performance (percentage based on total invested)
+            const totalInvested = state.investments.reduce((sum, inv) => sum + inv.amount, 0);
+            if (totalInvested > 0) {
+                state.monthlyPerformance = (state.monthlyEarnings / totalInvested * 100).toFixed(2);
+            }
+            
+            // Record history
+            state.history.push({
+                month: state.currentMonth,
+                balance: state.currentBalance,
+                monthlyEarnings: state.monthlyEarnings
+            });
+            
+            // Update UI
+            updateTotalBalance();
+            updateMonthlyEarnings();
+            updatePerformance();
+            updateCharts();
+            saveState();
+            
+            // Animation
+            const balanceElement = elements.totalBalanceDisplay;
+            balanceElement.classList.remove('text-blue-700');
+            balanceElement.classList.add('text-green-600');
+            setTimeout(() => {
+                balanceElement.classList.remove('text-green-600');
+                balanceElement.classList.add('text-blue-700');
+            }, 1000);
+        }
+
+        // Update total balance display
+        function updateTotalBalance() {
+            elements.totalBalanceDisplay.textContent = `$${state.currentBalance.toLocaleString('es-ES', {maximumFractionDigits: 2})}`;
+        }
+
+        // Update total invested display
+        function updateTotalInvested() {
+            const totalInvested = state.investments.reduce((sum, inv) => sum + inv.amount, 0);
+            elements.totalInvestedDisplay.textContent = `$${totalInvested.toLocaleString('es-ES', {maximumFractionDigits: 2})}`;
+        }
+
+        // Update monthly earnings display
+        function updateMonthlyEarnings() {
+            elements.monthlyEarningsDisplay.textContent = `$${state.monthlyEarnings.toLocaleString('es-ES', {maximumFractionDigits: 2})}`;
+        }
+
+        // Update performance display
+        function updatePerformance() {
+            elements.monthlyPerformanceDisplay.textContent = `${state.monthlyPerformance}%`;
+            elements.monthlyPerformanceBar.style.width = `${state.monthlyPerformance}%`;
+        }
+
+        // Render all investments
+        function renderInvestments() {
+            if (state.investments.length === 0) {
+                elements.investmentsContainer.innerHTML = `
+                    <div class="bg-gray-100 p-6 rounded-lg text-center">
+                        <i class="fas fa-coins text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">No hay inversiones registradas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let investmentsHTML = '';
+            
+            state.investments.forEach(investment => {
+                const formattedAmount = investment.amount.toLocaleString('es-ES', {maximumFractionDigits: 2});
+                const formattedEarning = investment.monthlyEarning.toLocaleString('es-ES', {maximumFractionDigits: 2});
+                
+                // Get icon based on investment type
+                let iconClass, bgColorClass, textColorClass;
+                switch (investment.type) {
+                    case 'stocks':
+                        iconClass = 'fa-chart-line';
+                        bgColorClass = 'bg-blue-100';
+                        textColorClass = 'text-blue-600';
+                        break;
+                    case 'real-estate':
+                        iconClass = 'fa-home';
+                        bgColorClass = 'bg-green-100';
+                        textColorClass = 'text-green-600';
+                        break;
+                    case 'crypto':
+                        iconClass = 'fa-coins';
+                        bgColorClass = 'bg-yellow-100';
+                        textColorClass = 'text-yellow-600';
+                        break;
+                    case 'bonds':
+                        iconClass = 'fa-file-invoice-dollar';
+                        bgColorClass = 'bg-purple-100';
+                        textColorClass = 'text-purple-600';
+                        break;
+                    case 'business':
+                        iconClass = 'fa-briefcase';
+                        bgColorClass = 'bg-amber-100';
+                        textColorClass = 'text-amber-600';
+                        break;
+                    default:
+                        iconClass = 'fa-piggy-bank';
+                        bgColorClass = 'bg-gray-100';
+                        textColorClass = 'text-gray-600';
+                }
+                
+                const ROI = (investment.monthlyEarning / investment.amount * 100).toFixed(2);
+                
+                investmentsHTML += `
+                    <div class="investment-card bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300">
+                        <div class="p-4 flex items-center justify-between ${bgColorClass}">
+                            <div class="flex items-center">
+                                <i class="fas ${iconClass} ${textColorClass} text-2xl mr-3"></i>
+                                <h3 class="font-semibold text-gray-800">${investment.name}</h3>
+                            </div>
+                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full bg-white ${textColorClass}">
+                                ${investment.type === 'stocks' ? 'Acciones' : 
+                                  investment.type === 'real-estate' ? 'Bienes Raíces' : 
+                                  investment.type === 'crypto' ? 'Cripto' : 
+                                  investment.type === 'bonds' ? 'Bonos' : 
+                                  investment.type === 'business' ? 'Negocio' : 'Otro'}
+                            </span>
+                        </div>
+                        
+                        <div class="p-4">
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div class="bg-gray-50 p-2 rounded">
+                                    <p class="text-xs text-gray-500">Invertido</p>
+                                    <p class="font-medium">$${formattedAmount}</p>
+                                </div>
+                                <div class="bg-gray-50 p-2 rounded">
+                                    <p class="text-xs text-gray-500">Ganancia mensual</p>
+                                    <p class="font-medium text-green-600">$${formattedEarning}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-blue-50 p-2 rounded mb-3">
+                                <p class="text-xs text-blue-600">ROI mensual</p>
+                                <p class="font-medium text-blue-800">${ROI}%</p>
+                            </div>
+                            
+                            ${investment.description ? `<p class="text-sm text-gray-600 mb-3">${investment.description}</p>` : ''}
+                            
+                            <div class="flex justify-between">
+                                <button onclick="openEditEarningsModal('${investment.id}')" class="px-3 py-1 bg-amber-100 text-amber-800 text-sm rounded hover:bg-amber-200">
+                                    <i class="fas fa-edit mr-1"></i> Actualizar
+                                </button>
+                                <button onclick="removeInvestment('${investment.id}')" class="px-3 py-1 bg-red-100 text-red-800 text-sm rounded hover:bg-red-200">
+                                    <i class="fas fa-trash-alt mr-1"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            elements.investmentsContainer.innerHTML = investmentsHTML;
+        }
+
+        // Open edit earnings modal
+        function openEditEarningsModal(investmentId) {
+            const investment = state.investments.find(inv => inv.id === investmentId);
+            if (investment) {
+                document.getElementById('edit-investment-id').value = investment.id;
+                document.getElementById('edit-investment-name').textContent = `${investment.name} ($${investment.amount.toLocaleString('es-ES', {maximumFractionDigits: 2})})`;
+                document.getElementById('current-earning').textContent = `$${investment.monthlyEarning.toLocaleString('es-ES', {maximumFractionDigits: 2})}`;
+                document.getElementById('new-monthly-earning').value = investment.monthlyEarning;
+                elements.editEarningsModal.classList.remove('hidden');
+            }
+        }
+
+        // Remove investment
+        function removeInvestment(investmentId) {
+            if (confirm("¿Estás seguro de que quieres eliminar esta inversión?")) {
+                const investmentIndex = state.investments.findIndex(inv => inv.id === investmentId);
+                if (investmentIndex !== -1) {
+                    state.currentBalance += state.investments[investmentIndex].amount;
+                    state.investments.splice(investmentIndex, 1);
+                    
+                    updateTotalBalance();
+                    updateTotalInvested();
+                    updateCharts();
+                    saveState();
+                    renderInvestments();
+                }
+            }
+        }
+
+        // Close all modals
+        function closeModals() {
+            elements.addInvestmentModal.classList.add('hidden');
+            elements.editEarningsModal.classList.add('hidden');
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Balance over time chart
+            balanceChart = new Chart(elements.balanceChart, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Balance Total ($)',
+                        data: [],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Balance: $${context.raw.toLocaleString('es-ES')}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return `$${value.toLocaleString('es-ES')}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Investment distribution chart
+            distributionChart = new Chart(elements.investmentDistribution, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(217, 119, 6, 0.7)',
+                            'rgba(156, 163, 175, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                            'rgba(139, 92, 246, 1)',
+                            'rgba(217, 119, 6, 1)',
+                            'rgba(156, 163, 175, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${label}: $${value.toLocaleString('es-ES')} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateCharts();
+        }
+
+        // Update charts with current data
+        function updateCharts() {
+            // Balance chart data
+            const balanceData = [{month: 1, balance: state.initialCapital, monthlyEarnings: 0}, ...state.history];
+            
+            balanceChart.data.labels = balanceData.map(entry => `Mes ${entry.month}`);
+            balanceChart.data.datasets[0].data = balanceData.map(entry => entry.balance);
+            balanceChart.update();
+            
+            // Distribution chart data
+            const typeCounts = state.investments.reduce((acc, investment) => {
+                const type = investment.type;
+                acc[type] = (acc[type] || 0) + investment.amount;
+                return acc;
+            }, {});
+            
+            const types = {
+                stocks: 'Acciones',
+                'real-estate': 'B. Raíces',
+                crypto: 'Cripto',
+                bonds: 'Bonos',
+                business: 'Negocio',
+                other: 'Otros'
+            };
+            
+            distributionChart.data.labels = Object.keys(typeCounts).map(type => types[type] || type);
+            distributionChart.data.datasets[0].data = Object.values(typeCounts);
+            distributionChart.update();
+        }
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('investmentApp', JSON.stringify(state));
+        }
+
+        // Full render of the app
+        function render() {
+            updateTotalBalance();
+            
+            if (state.history.length > 0) {
+                const lastMonth = state.history[state.history.length - 1];
+                state.monthlyEarnings = lastMonth.monthlyEarnings;
+                state.currentBalance = lastMonth.balance;
+            } else {
+                state.monthlyEarnings = state.investments.reduce((sum, inv) => sum + inv.monthlyEarning, 0);
+            }
+            
+            updateMonthlyEarnings();
+            updateTotalInvested();
+            
+            // Calculate performance (percentage based on total invested)
+            const totalInvested = state.investments.reduce((sum, inv) => sum + inv.amount, 0);
+            if (totalInvested > 0) {
+                state.monthlyPerformance = (state.monthlyEarnings / totalInvested * 100).toFixed(2);
+            }
+            updatePerformance();
+            
+            elements.currentMonthDisplay.textContent = `Mes actual: ${state.currentMonth}`;
+            
+            renderInvestments();
+            updateCharts();
+        }
+
+        // Expose functions to global scope for HTML event handlers
+        window.openEditEarningsModal = openEditEarningsModal;
+        window.removeInvestment = removeInvestment;
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+<p style="border-radius: 8px; text-align: center; font-size: 12px; color: #fff; margin-top: 16px;position: fixed; left: 8px; bottom: 8px; z-index: 10; background: rgba(0, 0, 0, 0.8); padding: 4px 8px;">Made with <img src="https://enzostvs-deepsite.hf.space/logo.svg" alt="DeepSite Logo" style="width: 16px; height: 16px; vertical-align: middle;display:inline-block;margin-right:3px;filter:brightness(0) invert(1);"><a href="https://enzostvs-deepsite.hf.space" style="color: #fff;text-decoration: underline;" target="_blank" >DeepSite</a> - 🧬 <a href="https://enzostvs-deepsite.hf.space?remix=fepdev25/gestion-inversiones" style="color: #fff;text-decoration: underline;" target="_blank" >Remix</a></p></body>
+</html>
