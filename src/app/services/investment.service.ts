@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AppState, MonthlyHistory } from '../models/app-state.model';
-import { Investment, StockInvestment, CryptoInvestment, RealEstateInvestment, BondInvestment, BusinessInvestment, OtherInvestment } from '../models/investment.model';
+import { Investment, InvestmentType } from '../models/investment.model';
 
 const DEFAULT_STATE: AppState = {
   initialCapital: 0,
@@ -10,7 +10,7 @@ const DEFAULT_STATE: AppState = {
   currentMonth: 1,
   monthlyEarnings: 0,
   monthlyPerformance: 0,
-  history: [], // Will be initialized with month 1 in constructor
+  history: [],
 };
 
 @Injectable({
@@ -18,7 +18,7 @@ const DEFAULT_STATE: AppState = {
 })
 export class InvestmentService {
   private readonly storageKey = 'investmentApp';
-  private _state$: BehaviorSubject<AppState>;
+  private _state$ = new BehaviorSubject<AppState>(DEFAULT_STATE);
 
   constructor() {
     const savedStateString = localStorage.getItem(this.storageKey);
@@ -26,7 +26,6 @@ export class InvestmentService {
 
     if (savedStateString) {
       initialState = JSON.parse(savedStateString);
-      // Ensure history is not empty and contains month 1 data
       if (!initialState.history || initialState.history.length === 0) {
         initialState.history = [{
           month: 1,
@@ -36,12 +35,8 @@ export class InvestmentService {
       } else {
         const month1History = initialState.history.find(h => h.month === 1);
         if (month1History) {
-          // If initialCapital from root state differs from month 1 history balance, update history
-          // This could happen if initialCapital was changed after first save.
-          // We trust the initialState.initialCapital as the source of truth for current initialCapital.
           month1History.balance = initialState.initialCapital;
         } else {
-          // Month 1 history is missing, add it and re-sort.
           initialState.history.unshift({
             month: 1,
             balance: initialState.initialCapital,
@@ -56,9 +51,8 @@ export class InvestmentService {
         history: [{ month: 1, balance: DEFAULT_STATE.initialCapital, monthlyEarnings: 0 }]
       };
     }
-    this._state$ = new BehaviorSubject<AppState>(initialState);
-    // Perform an initial summary calculation for the loaded/default state
-    this.updateCurrentMonthSummary(false); // Don't save again, constructor handles initial load
+    this._state$.next(initialState);
+    this.updateCurrentMonthSummary(false);
   }
 
   private saveState(state: AppState): void {
@@ -71,6 +65,63 @@ export class InvestmentService {
 
   getCurrentState(): AppState {
     return this._state$.getValue();
+  }
+
+  private validateInvestmentData(investment: Investment): boolean {
+    if (!investment.name || investment.name.trim() === '') {
+      console.error('El nombre de la inversión es requerido');
+      return false;
+    }
+
+    if (investment.amount <= 0) {
+      console.error('El monto de la inversión debe ser mayor que 0');
+      return false;
+    }
+
+    if (investment.monthlyEarning < 0) {
+      console.error('Las ganancias mensuales no pueden ser negativas');
+      return false;
+    }
+
+    return true;
+  }
+
+  private isValidInvestmentType(type: string): type is InvestmentType {
+    return ['stocks', 'real-estate', 'crypto', 'bonds', 'business', 'other'].includes(type);
+  }
+
+  addInvestment(investmentData: Omit<Investment, 'id' | 'addedAt'>): void {
+    const currentState = this.getCurrentState();
+
+    if (!this.isValidInvestmentType(investmentData.type)) {
+      console.error('Tipo de inversión inválido:', investmentData.type);
+      return;
+    }
+
+    if (!this.validateInvestmentData(investmentData as Investment)) {
+      return;
+    }
+
+    if (investmentData.amount > currentState.currentBalance) {
+      alert('No tienes suficiente capital para esta inversión');
+      return;
+    }
+
+    const newInvestment = {
+      ...investmentData,
+      id: Date.now().toString(),
+      addedAt: currentState.currentMonth,
+    } as Investment;
+
+    const newState: AppState = {
+      ...currentState,
+      investments: [...currentState.investments, newInvestment],
+      currentBalance: currentState.currentBalance - newInvestment.amount,
+    };
+
+    this._state$.next(newState);
+    this.saveState(newState);
+    this.updateCurrentMonthSummary(true);
   }
 
   setInitialCapital(capital: number): void {
@@ -105,31 +156,6 @@ export class InvestmentService {
     this._state$.next(newState);
     this.saveState(newState);
     this.updateCurrentMonthSummary(true); // Recalculate performance etc.
-  }
-
-  addInvestment(investmentData: Omit<StockInvestment | CryptoInvestment | RealEstateInvestment | BondInvestment | BusinessInvestment | OtherInvestment, 'id' | 'addedAt'>): void {
-    const currentState = this.getCurrentState();
-    if (investmentData.amount > currentState.currentBalance) {
-      alert('No tienes suficiente capital para esta inversión');
-      return;
-    }
-
-    const newInvestment: Investment = { // Explicitly type newInvestment with the union type
-      ...investmentData,
-      id: Date.now().toString(),
-      addedAt: currentState.currentMonth,
-    };
-
-    const newState: AppState = {
-      ...currentState,
-      investments: [...currentState.investments, newInvestment],
-      currentBalance: currentState.currentBalance - newInvestment.amount,
-    };
-    this._state$.next(newState);
-    // Note: saveState and updateCurrentMonthSummary will be called by the public method that calls this if needed.
-    // However, for addInvestment, we usually want immediate persistence and summary update.
-    this.saveState(newState);
-    this.updateCurrentMonthSummary(true);
   }
 
   updateInvestmentEarnings(investmentId: string, newMonthlyEarning: number): void {

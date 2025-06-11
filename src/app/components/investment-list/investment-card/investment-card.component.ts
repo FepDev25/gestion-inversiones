@@ -1,6 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Investment, StockInvestment, CryptoInvestment, RealEstateInvestment, BondInvestment, BusinessInvestment, OtherInvestment } from '../../../models'; // Adjusted import path
+import { Investment } from '../../../models/investment.model';
+import { StockInvestment } from '../../../models/stock-investment.model';
+import { CryptoInvestment } from '../../../models/crypto-investment.model';
+import { RealEstateInvestment } from '../../../models/real-estate-investment.model';
+import { BondInvestment } from '../../../models/bond-investment.model';
+import { BusinessInvestment } from '../../../models/business-investment.model';
+import { OtherInvestment } from '../../../models/other-investment.model';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faChartLine, faHome, faCoins, faFileInvoiceDollar, faBriefcase, faPiggyBank, faEdit, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 

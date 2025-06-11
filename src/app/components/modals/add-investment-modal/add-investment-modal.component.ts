@@ -2,17 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Import FormsModule for ngModel
 import { InvestmentService } from '../../../services/investment.service';
-import {
-  Investment,
-  InvestmentType,
-  getAllInvestmentTypes,
-  StockInvestment,
-  CryptoInvestment,
-  RealEstateInvestment,
-  BondInvestment,
-  BusinessInvestment,
-  OtherInvestment
-} from '../../../models'; // Adjusted import
+import { Investment } from '../../../models/investment.model';
 import { FaIconLibrary, FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
@@ -27,36 +17,38 @@ export class AddInvestmentModalComponent {
   @Input() isVisible: boolean = false;
   @Output() closeModal = new EventEmitter<void>();
 
+  // Propiedades básicas
   investmentName: string = '';
-  investmentType: InvestmentType = 'stocks'; // Use InvestmentType
+  investmentType: Investment['type'] = 'stocks';
   investmentAmount: number | null = null;
   monthlyEarning: number | null = null;
   investmentDescription: string = '';
 
-  investmentTypes: InvestmentType[] = getAllInvestmentTypes();
+  // Tipos de inversión disponibles
+  investmentTypes: Investment['type'][] = ['stocks', 'crypto', 'real-estate', 'bonds', 'business'];
 
-  // Stock specific
+  // Propiedades para acciones
   tickerSymbol: string = '';
   shares: number | null = null;
-  acquisitionPercentage: number | null = null; // Store as 0-1
+  acquisitionPercentage: number | null = null;
 
-  // Crypto specific
+  // Propiedades para criptomonedas
   cryptoName: string = '';
   walletAddress: string = '';
 
-  // Real Estate specific
+  // Propiedades para bienes raíces
   propertyAddress: string = '';
-  propertyType: 'residential' | 'commercial' | 'industrial' | 'land' = 'residential';
-  propertyTypes: Array<'residential' | 'commercial' | 'industrial' | 'land'> = ['residential', 'commercial', 'industrial', 'land'];
+  propertyType: string = '';
+  propertyTypes: string[] = ['residential', 'commercial', 'industrial', 'land'];
 
-  // Bond specific
+  // Propiedades para bonos
   issuerName: string = '';
-  maturityDate: string = ''; // Store as string YYYY-MM-DD for input type="date"
-  couponRate: number | null = null; // Store as 0-1
+  maturityDate: string = '';
+  couponRate: number | null = null;
 
-  // Business specific
+  // Propiedades para negocios
   businessName: string = '';
-  stakePercentage: number | null = null; // Store as 0-1
+  stakePercentage: number | null = null;
 
   constructor(private investmentService: InvestmentService, library: FaIconLibrary) {
     library.addIcons(faTimes);
@@ -64,109 +56,54 @@ export class AddInvestmentModalComponent {
 
   onSubmit(): void {
     if (!this.investmentName || this.investmentAmount === null || this.monthlyEarning === null || this.investmentAmount <= 0) {
-      alert('Por favor, complete los campos obligatorios (Nombre, Capital Invertido, Ganancia Mensual Estimada) y asegúrese que el capital invertido sea mayor a cero.');
+      // Basic validation
+      alert('Por favor, complete los campos obligatorios y asegúrese que el capital invertido sea mayor a cero.');
       return;
     }
 
+    // Check against current balance (optional, could also be done in service)
     const currentBalance = this.investmentService.getCurrentState().currentBalance;
     if (this.investmentAmount > currentBalance) {
         alert("No tienes suficiente capital para esta inversión. Saldo actual: $" + currentBalance.toLocaleString('es-ES', {maximumFractionDigits: 2}));
         return;
     }
 
-    let newInvestmentData: Omit<Investment, 'id' | 'addedAt'>;
+    // Crear objeto de inversión con datos específicos según el tipo
+    const investmentData: any = {
+      name: this.investmentName,
+      type: this.investmentType,
+      amount: this.investmentAmount,
+      monthlyEarning: this.monthlyEarning,
+      description: this.investmentDescription,
+    };
 
+    // Agregar campos específicos según el tipo de inversión
     switch (this.investmentType) {
       case 'stocks':
-        if (!this.tickerSymbol || !this.shares || this.shares <=0 || this.acquisitionPercentage === null || this.acquisitionPercentage < 0 || this.acquisitionPercentage > 1) {
-          alert('Por favor, complete todos los campos específicos para Acciones correctamente (Símbolo, Cantidad > 0, % Adquisición entre 0 y 1).');
-          return;
-        }
-        newInvestmentData = {
-          name: this.investmentName,
-          type: 'stocks',
-          amount: this.investmentAmount!,
-          monthlyEarning: this.monthlyEarning!,
-          description: this.investmentDescription,
-          tickerSymbol: this.tickerSymbol,
-          shares: this.shares,
-          acquisitionPercentage: this.acquisitionPercentage,
-        };
+        investmentData.tickerSymbol = this.tickerSymbol;
+        investmentData.shares = this.shares;
+        investmentData.acquisitionPercentage = this.acquisitionPercentage;
         break;
       case 'crypto':
-        if (!this.cryptoName) {
-          alert('Por favor, complete todos los campos específicos para Crypto (Nombre Crypto).');
-          return;
-        }
-        newInvestmentData = {
-          name: this.investmentName,
-          type: 'crypto',
-          amount: this.investmentAmount!,
-          monthlyEarning: this.monthlyEarning!,
-          description: this.investmentDescription,
-          cryptoName: this.cryptoName,
-          walletAddress: this.walletAddress || undefined, // Optional
-        };
+        investmentData.cryptoName = this.cryptoName;
+        investmentData.walletAddress = this.walletAddress;
         break;
       case 'real-estate':
-        if (!this.propertyAddress) {
-            alert('Por favor, ingrese la dirección de la propiedad.');
-            return;
-        }
-        newInvestmentData = {
-            name: this.investmentName,
-            type: 'real-estate',
-            amount: this.investmentAmount!,
-            monthlyEarning: this.monthlyEarning!,
-            description: this.investmentDescription,
-            propertyAddress: this.propertyAddress,
-            propertyType: this.propertyType,
-        };
+        investmentData.propertyAddress = this.propertyAddress;
+        investmentData.propertyType = this.propertyType;
         break;
-    case 'bonds':
-        if (!this.issuerName || !this.maturityDate || this.couponRate === null || this.couponRate < 0 || this.couponRate > 1) {
-            alert('Por favor, complete todos los campos específicos para Bonos correctamente (Emisor, Fecha de Vencimiento, Tasa de Cupón entre 0 y 1).');
-            return;
-        }
-        newInvestmentData = {
-            name: this.investmentName,
-            type: 'bonds',
-            amount: this.investmentAmount!,
-            monthlyEarning: this.monthlyEarning!,
-            description: this.investmentDescription,
-            issuerName: this.issuerName,
-            maturityDate: new Date(this.maturityDate).getTime(), // Convert to timestamp
-            couponRate: this.couponRate,
-        };
+      case 'bonds':
+        investmentData.issuerName = this.issuerName;
+        investmentData.maturityDate = this.maturityDate;
+        investmentData.couponRate = this.couponRate;
         break;
-    case 'business':
-        if (!this.businessName || this.stakePercentage === null || this.stakePercentage < 0 || this.stakePercentage > 1) {
-            alert('Por favor, complete todos los campos específicos para Negocios correctamente (Nombre del Negocio, % Participación entre 0 y 1).');
-            return;
-        }
-        newInvestmentData = {
-            name: this.investmentName,
-            type: 'business',
-            amount: this.investmentAmount!,
-            monthlyEarning: this.monthlyEarning!,
-            description: this.investmentDescription,
-            businessName: this.businessName,
-            stakePercentage: this.stakePercentage,
-        };
-        break;
-    case 'other':
-    default: // Fallback for 'other' or if type somehow becomes unset
-        newInvestmentData = {
-            name: this.investmentName,
-            type: this.investmentType, // Ensures 'other' is correctly passed or any valid type
-            amount: this.investmentAmount!,
-            monthlyEarning: this.monthlyEarning!,
-            description: this.investmentDescription,
-        };
+      case 'business':
+        investmentData.businessName = this.businessName;
+        investmentData.stakePercentage = this.stakePercentage;
         break;
     }
 
-    this.investmentService.addInvestment(newInvestmentData);
+    this.investmentService.addInvestment(investmentData);
     this.resetForm();
     this.closeModal.emit();
   }
@@ -177,31 +114,32 @@ export class AddInvestmentModalComponent {
   }
 
   private resetForm(): void {
+    // Resetear propiedades básicas
     this.investmentName = '';
-    this.investmentType = 'stocks'; // Default type
+    this.investmentType = 'stocks';
     this.investmentAmount = null;
     this.monthlyEarning = null;
     this.investmentDescription = '';
 
-    // Reset Stock specific
+    // Resetear propiedades de acciones
     this.tickerSymbol = '';
     this.shares = null;
     this.acquisitionPercentage = null;
 
-    // Reset Crypto specific
+    // Resetear propiedades de criptomonedas
     this.cryptoName = '';
     this.walletAddress = '';
 
-    // Reset Real Estate specific
+    // Resetear propiedades de bienes raíces
     this.propertyAddress = '';
-    this.propertyType = 'residential';
+    this.propertyType = '';
 
-    // Reset Bond specific
+    // Resetear propiedades de bonos
     this.issuerName = '';
     this.maturityDate = '';
     this.couponRate = null;
 
-    // Reset Business specific
+    // Resetear propiedades de negocios
     this.businessName = '';
     this.stakePercentage = null;
   }
